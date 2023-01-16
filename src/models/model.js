@@ -16,8 +16,8 @@ const coinSchema = new mongoose.Schema({
     },
     priceUsd:{
         type:String,
-        // unique : true
+        unique : true
     }
 },{timestamps:true})
 
-module.exports= mongoose.model("cryptoCurrencyCoin",coinSchema)
+module.exports= mongoose.model("coin",coinSchema)

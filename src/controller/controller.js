@@ -1,20 +1,30 @@
-const coinModel = require("../models/model");
-const axios = require("axios")
 
-const getCoins = async function(req,res){
-    const headers = req.headers.authorization
+const { default: axios } = require('axios');
+const blockModel = require('../models/model');
 
-    console.log(headers)
+const getBlock =  async function(req, res){
+ try{
 
-    const coinsData = await axios.get(`https://api.coincap.io/v2/assets`)
-    const data = coinsData.data.data
-    let {symbol , name ,marketCapUsd , priceUsd , changePercent24Hr} = data
-    // const dataInDb = await coinModel.find({data})
-    // if(dataInDb){return res.status(200).send({status:true, msg: "Data Already Exist"})}
-    const finalData = await coinModel.create(data)
-    res.send({status : true , data: symbol,name,marketCapUsd,priceUsd,changePercent24Hr})
+    let options = {
+       headers: {Authorization:"Bearer b5f8b993-ce79-468a-ba18-3fa85deff330"},
+       method: "get",
+       url: `https://api.coincap.io/v2/assets`
+    }
+    let result = await axios(options)
+    let data = result.data.data
+const sortdata = data.sort((a, b) => { return a.changePercent24Hr - b.changePercent24Hr }); 
+        
+    await blockModel.deleteMany() 
 
+    let block = await blockModel.create(sortdata)
+
+    let finalBlocks = await blockModel.find().select({__v:0, _id:0}) 
+
+    return res.status(201).send({staus:true, message:"Blocks successfully created", data:finalBlocks})
+
+ }catch(error){
+    return res.status(500).send({status:false, message: error.message})
+
+ }
 }
-
-
-module.exports.getCoins = getCoins
+module.exports = {getBlock}
